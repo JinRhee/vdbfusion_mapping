@@ -6,6 +6,9 @@ world_frame: "map"
 
 debug_print: true
 
+# Collate meshes for final singular mesh
+collate_mesh: true
+
 # Ignore points closer than this value (meters) (default 0.4)
 min_scan_range: 0.4
 

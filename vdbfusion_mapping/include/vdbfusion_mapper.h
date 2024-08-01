@@ -32,6 +32,7 @@
 #include "transform.h"
 
 #include "openvdb/openvdb.h"
+#include "open3d/Open3D.h"
 #include "vdbfusion_mapping_msgs/SaveMap.h"
 
 namespace vdbfusion_mapping {
@@ -52,6 +53,8 @@ class VDBFusionMapper {
     double sdf_voxel_size = 0.04;
     double sdf_min_weight = 0.5;
     double sdf_deactivate = 0.05;
+
+    bool collate_meshes = false;
   };
 
   VDBFusionMapper(const ros::NodeHandle &nh, const ros::NodeHandle &nh_private);
@@ -60,6 +63,8 @@ class VDBFusionMapper {
   // ROS callbacks.
   void points_callback(const sensor_msgs::PointCloud2::Ptr &input);
   void odom_callback(const nav_msgs::Odometry::ConstPtr &input);
+
+  std::shared_ptr<open3d::geometry::TriangleMesh> getMesh();
   bool saveMap_callback(vdbfusion_mapping_msgs::SaveMap::Request &req,
                         vdbfusion_mapping_msgs::SaveMap::Response &res);
 
@@ -99,6 +104,8 @@ class VDBFusionMapper {
   std::queue<std::tuple<Eigen::Matrix4d, std::vector<Eigen::Vector3d>,
                         std::vector<openvdb::Vec3i>>>
       data_buf;
+
+  std::shared_ptr<open3d::geometry::TriangleMesh> collated_mesh = std::make_shared <open3d::geometry::TriangleMesh>();
 
   std::thread integrate_thread;
 

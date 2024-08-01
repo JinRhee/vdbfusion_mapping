@@ -40,6 +40,8 @@ void VDBFusionMapper::mapIntegrateProcess() {
     m_data.lock();
     if (data_buf.empty()) {
       std::chrono::seconds dura(5);
+      *collated_mesh += *getMesh();      // Collate mesh
+      //getMeshData();
       m_data.unlock();
       LOG(INFO) << "There is no data now, finished all data. After saving the "
                    "result, you can kill then";
@@ -154,7 +156,77 @@ void VDBFusionMapper::filterptRange(
     }
   }
 }
+/*
+void getMeshData()
+{
+  std::cout << "=================== GET MESH DATA START ======================"
+            << std::endl;
 
+  m_fullmap.lock();
+  auto [vertices, triangles, color_] = tsdf_volume.ExtractTriangleMesh(
+      config_.fill_holes_, config_.sdf_min_weight);// Get mesh
+  m_fullmap.unlock();
+
+  collated_vertices.pushback(vertices);
+  collated_triangles.pushback(triangles);
+  collated_colors.pushback(color_);
+
+  std::cout << collated_vertices.
+
+  std::cout << "=================== GET MESH DATA END ======================"
+          << std::endl;
+}
+*/
+
+std::shared_ptr<open3d::geometry::TriangleMesh>
+VDBFusionMapper::getMesh(){
+  std::cout << "=================== MESH PROCESS START ======================"
+            << std::endl;
+  // Get data
+  m_fullmap.lock();
+
+  auto [vertices, triangles, color_] = tsdf_volume.ExtractTriangleMesh(
+      config_.fill_holes_, config_.sdf_min_weight);
+
+  m_fullmap.unlock();
+
+  // Get mesh
+  open3d::geometry::TriangleMesh mesh_o3d =
+      open3d::geometry::TriangleMesh(vertices, triangles);
+  auto shared_mesh = std::make_shared<open3d::geometry::TriangleMesh>(mesh_o3d);
+  if (color_pointcloud && color_.size() != 0) {
+    mesh_o3d.vertex_colors_.reserve(mesh_o3d.vertices_.size());
+    for (size_t i = 0; i < mesh_o3d.vertices_.size(); i++) {
+      mesh_o3d.vertex_colors_.emplace_back(
+          color_[i][0] / 255.0, color_[i][1] / 255.0, color_[i][2] / 255.0);
+    }
+  }
+  std::cout << "=================== MESH PROCESS END ======================"
+            << std::endl;
+  return shared_mesh;
+}
+
+bool VDBFusionMapper::saveMap_callback(
+    vdbfusion_mapping_msgs::SaveMap::Request &req,
+    vdbfusion_mapping_msgs::SaveMap::Response &res) {
+  std::cout << "=================== SAVE PROCESS START ======================"
+            << std::endl;
+  double save_map_filter_res = req.filter_res;
+  TIC;
+  std::string save_map_path = req.path;
+
+  open3d::io::WriteTriangleMesh(save_map_path + "_mesh.ply", *collated_mesh);
+  LOG(INFO) << "save mesh in path: " << save_map_path + "_mesh.ply";
+  TOC("SAVE MESH", _debug_print);
+
+  res.success = true;
+
+  std::cout << "=================== SAVE PROCESS END ======================"
+            << std::endl;
+  return res.success;
+}
+
+/*
 bool VDBFusionMapper::saveMap_callback(
     vdbfusion_mapping_msgs::SaveMap::Request &req,
     vdbfusion_mapping_msgs::SaveMap::Response &res) {
@@ -284,7 +356,7 @@ bool VDBFusionMapper::saveMap_callback(
             << std::endl;
   return res.success;
 }
-
+*/
 void VDBFusionMapper::setConfig() {
   nh_private_.getParam("lidar_topic", _lidar_topic);
   nh_private_.getParam("debug_print", _debug_print);
