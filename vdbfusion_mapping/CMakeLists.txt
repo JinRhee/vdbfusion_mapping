@@ -22,7 +22,7 @@ find_package(OpenVDB REQUIRED)
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Find installed Open3D, which exports Open3D::Open3D
-list(APPEND CMAKE_MODULE_PATH "/usr/local/lib/cmake/open3d")
+list(APPEND CMAKE_MODULE_PATH "/usr/local/lib/cmake/Open3D")
 find_package(Open3D REQUIRED)
 include_directories("/usr/local/include/open3d/3rdparty")
 # Libigl

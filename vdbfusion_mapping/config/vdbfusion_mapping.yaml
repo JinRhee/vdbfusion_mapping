@@ -1,6 +1,8 @@
 # input topic name setting ===========> Please change according to your dataset
-lidar_topic: "/odom_lidar"
-odom_topic: "/auto_odom"
+lidar_topic: "/dreamstep_colored_body"
+odom_topic: "/dreamstep_odom"
+pose_source: 2
+world_frame: "map"
 
 debug_print: true
 
@@ -21,3 +23,13 @@ sdf_voxel_size: 0.04
 # min weight setting TODO add details description
 sdf_min_weight: 0.5
 sdf_deactivate: 0.05
+
+# Translation
+tx: 0
+ty: 0
+tz: 0
+# Rotation Quaternion
+x: 0
+y: 0
+z: 0
+w: 1

@@ -251,6 +251,7 @@ bool VDBFusionMapper::saveMap_callback(
 
   open3d::geometry::TriangleMesh mesh_o3d =
       open3d::geometry::TriangleMesh(vertices, triangles);
+  auto shared_mesh = std::make_shared<open3d::geometry::TriangleMesh>(mesh_o3d);
   if (color_pointcloud && color_.size() != 0) {
     mesh_o3d.vertex_colors_.reserve(mesh_o3d.vertices_.size());
     for (size_t i = 0; i < mesh_o3d.vertices_.size(); i++) {
@@ -275,6 +276,10 @@ bool VDBFusionMapper::saveMap_callback(
   //                          igl::FileEncoding::Binary);
 
   res.success = true;
+  
+  std::vector<std::shared_ptr<const open3d::geometry::Geometry> > meshes;
+  meshes.push_back(shared_mesh);
+  //open3d::visualization::DrawGeometries(meshes);
   std::cout << "=================== SAVE PROCESS END ======================"
             << std::endl;
   return res.success;
