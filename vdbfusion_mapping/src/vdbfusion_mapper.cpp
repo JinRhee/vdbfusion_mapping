@@ -40,8 +40,7 @@ void VDBFusionMapper::mapIntegrateProcess() {
     m_data.lock();
     if (data_buf.empty()) {
       std::chrono::seconds dura(5);
-      *collated_mesh += *getMesh();      // Collate mesh
-      //getMeshData();
+      getMeshData();
       m_data.unlock();
       LOG(INFO) << "There is no data now, finished all data. After saving the "
                    "result, you can kill then";
@@ -156,8 +155,8 @@ void VDBFusionMapper::filterptRange(
     }
   }
 }
-/*
-void getMeshData()
+
+void VDBFusionMapper::getMeshData()
 {
   std::cout << "=================== GET MESH DATA START ======================"
             << std::endl;
@@ -165,18 +164,46 @@ void getMeshData()
   m_fullmap.lock();
   auto [vertices, triangles, color_] = tsdf_volume.ExtractTriangleMesh(
       config_.fill_holes_, config_.sdf_min_weight);// Get mesh
+  
+
+  collated_vertices.push(vertices);
+  collated_triangles.push(triangles);
+  collated_colors.push(color_);
   m_fullmap.unlock();
 
-  collated_vertices.pushback(vertices);
-  collated_triangles.pushback(triangles);
-  collated_colors.pushback(color_);
-
-  std::cout << collated_vertices.
+  std::cout << collated_vertices.size() << std::endl;
 
   std::cout << "=================== GET MESH DATA END ======================"
           << std::endl;
 }
-*/
+
+void VDBFusionMapper::constructCollatedMesh(std::shared_ptr<open3d::geometry::TriangleMesh> mesh_o3d_ptr)
+{
+  unsigned int num = collated_colors.size();
+  open3d::geometry::TriangleMesh mesh_o3d = *mesh_o3d_ptr;
+  open3d::geometry::TriangleMesh mesh_o3d_temp;
+  if (!(collated_vertices.size() && collated_triangles.size() && collated_colors.size())){
+    LOG(WARNING) << "zero meshes collated!";
+    return;
+  }
+  while (collated_colors.size())
+  {
+    mesh_o3d_temp = open3d::geometry::TriangleMesh(collated_vertices.front(), collated_triangles.front());
+    if (color_pointcloud && collated_colors.front().size() != 0) {
+      mesh_o3d_temp.vertex_colors_.reserve(mesh_o3d.vertices_.size());
+      for (size_t i = 0; i < mesh_o3d_temp.vertices_.size(); i++) {
+        mesh_o3d_temp.vertex_colors_.emplace_back(
+            collated_colors.front()[i][0] / 255.0, collated_colors.front()[i][1] / 255.0, collated_colors.front()[i][2] / 255.0);
+    }
+    collated_vertices.pop();
+    collated_triangles.pop();
+    collated_colors.pop();
+    *mesh_o3d_ptr += mesh_o3d_temp;
+  }
+
+  }
+}
+
 
 std::shared_ptr<open3d::geometry::TriangleMesh>
 VDBFusionMapper::getMesh(){

@@ -65,6 +65,8 @@ class VDBFusionMapper {
   void odom_callback(const nav_msgs::Odometry::ConstPtr &input);
 
   std::shared_ptr<open3d::geometry::TriangleMesh> getMesh();
+  void getMeshData();
+  void constructCollatedMesh(std::shared_ptr<open3d::geometry::TriangleMesh> mesh_o3d_ptr);
   bool saveMap_callback(vdbfusion_mapping_msgs::SaveMap::Request &req,
                         vdbfusion_mapping_msgs::SaveMap::Response &res);
 
@@ -83,6 +85,7 @@ class VDBFusionMapper {
 
   // IO.
   const Config &getConfig() const { return config_; }
+  
 
  private:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -113,6 +116,12 @@ class VDBFusionMapper {
   bool _debug_print = true;
   bool color_pointcloud = false;
   int enqueue = 0, dequeue = 0;
+  
+  std::queue<std::vector<Eigen::Vector3d> > collated_vertices;
+  std::queue<std::vector<Eigen::Vector3i> > collated_triangles;
+  std::queue<std::vector<openvdb::Vec3i> > collated_colors;
+  
+  
 };
 }  // namespace vdbfusion_mapping
 
