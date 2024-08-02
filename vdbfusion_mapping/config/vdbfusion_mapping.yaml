@@ -9,6 +9,9 @@ debug_print: true
 # Collate meshes for final singular mesh
 collate_mesh: true
 
+# Wait time
+wait_time: 1
+
 # Ignore points closer than this value (meters) (default 0.4)
 min_scan_range: 0.4
 

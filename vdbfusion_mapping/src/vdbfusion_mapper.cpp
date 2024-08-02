@@ -39,7 +39,7 @@ void VDBFusionMapper::mapIntegrateProcess() {
   while (ros::ok()) {
     m_data.lock();
     if (data_buf.empty()) {
-      std::chrono::seconds dura(5);
+      std::chrono::seconds dura(_wait_time);
       m_data.unlock();
       LOG(INFO) << "There is no data now, finished all data. After saving the "
                    "result, you can kill then";
@@ -59,8 +59,6 @@ void VDBFusionMapper::mapIntegrateProcess() {
     m_data.unlock();
 
     Eigen::Vector3d origin = tf_matrix.block<3, 1>(0, 3);
-
-    // Send data buffer message to collating node
 
     tsdf_volume.Integrate(points, color, origin,
                           common::WeightFunction::constant_weight);
@@ -260,17 +258,9 @@ bool VDBFusionMapper::saveMap_callback(
           color_[i][0] / 255.0, color_[i][1] / 255.0, color_[i][2] / 255.0);
     }
   }
-  std::cout << "Number of triangles in created mesh: " << mesh_o3d.triangle_normals_.size() << std::endl;
-  if (first_mesh){
-    combined_mesh = mesh_o3d;
-    first_mesh = false;
-  }
-  combineMesh(mesh_o3d);
   open3d::io::WriteTriangleMesh(save_map_path + "_mesh.ply", mesh_o3d);
   LOG(INFO) << "save mesh in path: " << save_map_path + "_mesh.ply";
   TOC("SAVE MESH", _debug_print);
-
-  open3d::io::WriteTriangleMesh(save_map_path + "_combined_mesh.ply", combined_mesh);
 
   // if you don't want to use the open3d to save, use this one for simple but no
   // RGB! Eigen::MatrixXd V(vertices.size(), 3); for (size_t i = 0; i <
@@ -290,15 +280,10 @@ bool VDBFusionMapper::saveMap_callback(
   return res.success;
 }
 
-void VDBFusionMapper::combineMesh(const open3d::geometry::TriangleMesh& mesh_o3d)
-{
-  combined_mesh += mesh_o3d;
-  std::cout << "Number of triangles in combined mesh: " << combined_mesh.triangle_normals_.size() << std::endl;
-}
-
 void VDBFusionMapper::setConfig() {
   nh_private_.getParam("lidar_topic", _lidar_topic);
   nh_private_.getParam("debug_print", _debug_print);
+  nh_private_.getParam("wait_time", _wait_time);
 
   nh_private_.getParam("min_scan_range", config_.min_scan_range);
   nh_private_.getParam("max_scan_range", config_.max_scan_range);

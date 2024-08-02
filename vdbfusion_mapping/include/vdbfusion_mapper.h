@@ -31,7 +31,6 @@
 #include "VDBVolume.h"
 #include "transform.h"
 
-#include "open3d/Open3D.h"
 #include "openvdb/openvdb.h"
 #include "vdbfusion_mapping_msgs/SaveMap.h"
 
@@ -76,7 +75,6 @@ class VDBFusionMapper {
   void filterptRange(const typename pcl::PointCloud<PCLPoint> &pointcloud_pcl,
                      pcl::PointCloud<pcl::PointXYZ> &cloud_filter,
                      std::vector<openvdb::Vec3i> &color);
-  void combineMesh(const open3d::geometry::TriangleMesh& mesh_o3d);
 
   // IO.
   const Config &getConfig() const { return config_; }
@@ -87,9 +85,6 @@ class VDBFusionMapper {
   Config config_;
   vdbfusion::VDBVolume tsdf_volume, tsdf_volume_hdda;
   common::Transformer retrive_mpose;
-
-  // Combined mesh
-  open3d::geometry::TriangleMesh combined_mesh;
 
   // Node handles.
   ros::NodeHandle nh_;
@@ -111,7 +106,7 @@ class VDBFusionMapper {
   bool _debug_print = true;
   bool color_pointcloud = false;
   int enqueue = 0, dequeue = 0;
-  bool first_mesh = true;
+  int _wait_time = 5;
 };
 }  // namespace vdbfusion_mapping
 
