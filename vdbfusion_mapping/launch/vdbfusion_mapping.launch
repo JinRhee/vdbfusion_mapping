@@ -4,7 +4,5 @@
   <node pkg="vdbfusion_ros" type="vdbfusion_mapping" name="vdbfusion_mapping_node" output="screen">
     <rosparam command="load" file="$(find vdbfusion_ros)/config/vdbfusion_mapping.yaml"/>
   </node>
-  <arg name="bag_file" default="/home/kin/bags/kitti/kitti_se11_full_res.bag" />
-  <node pkg="rosbag" type="play" name="bag_play" args="$(arg bag_file) --clock -r 0.3" required="false"/>
 
 </launch>
