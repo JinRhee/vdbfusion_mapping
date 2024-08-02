@@ -1,3 +1,4 @@
+# glog
 for glog, please just run the script directly
 
 ```bash
@@ -64,20 +65,19 @@ sudo ln -s /usr/local/boost_1_70_0/lib/libboost_iostreams.so.1.70.0 /usr/local/l
 ```
 
 # Open3D
-mainly for save the rgb mesh and visualize real-time, if you don't want to install, please just comment the code related to this one, for save mesh, you can uncomment the igl
-build from source
+Follow Step 1 from [https://github.com/isl-org/open3d-cmake-find-package](https://github.com/isl-org/open3d-cmake-find-package) to download Open3d >= v0.16.0
 ```bash
-git clone --depth 1 --branch v0.16.0 https://gitcode.net/mirrors/isl-org/Open3D.git && cd Open3D \
-    && util/install_deps_ubuntu.sh && mkdir build && cd build && cmake .. \
-    && make -j$(nproc) \
-    && make -j$(nproc) all install \
-    && cd / \
-    && rm -rf /Open3D
+git clone --recursive https://github.com/intel-isl/Open3D.git
+cd Open3D
+mkdir build
+cd build
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${HOME}/open3d_install ..
+make install -j 12
+cd ../..
 ```
-
-or use the binary lib but need to cp/ln the lib, there are four steps after download here: [https://github.com/isl-org/Open3D/releases](https://github.com/isl-org/Open3D/releases)
+Then move the relevant files into `/usr/local/*`:
 ```bash
-sudo cp -r ~/Desktop/Open3D/include/open3d /usr/local/include
-sudo cp -r ~/Desktop/Open3D/lib/cmake/Open3D /usr/local/lib/cmake
-sudo cp -r ~/Desktop/Open3D/libOpen3D.so /usr/local/lib
+sudo cp -r ${HOME}/open3d_install/include/open3d /usr/local/include
+sudo cp -r ${HOME}/open3d_install/lib/cmake/Open3D /usr/local/lib/cmake
+sudo cp -r ${HOME}/open3d_install/lib/libOpen3D.so /usr/local/lib
 ```
