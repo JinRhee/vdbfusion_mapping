@@ -60,6 +60,8 @@ void VDBFusionMapper::mapIntegrateProcess() {
 
     Eigen::Vector3d origin = tf_matrix.block<3, 1>(0, 3);
 
+    // Send data buffer message to collating node
+
     tsdf_volume.Integrate(points, color, origin,
                           common::WeightFunction::constant_weight);
 
@@ -258,9 +260,17 @@ bool VDBFusionMapper::saveMap_callback(
           color_[i][0] / 255.0, color_[i][1] / 255.0, color_[i][2] / 255.0);
     }
   }
+  std::cout << "Number of triangles in created mesh: " << mesh_o3d.triangle_normals_.size() << std::endl;
+  if (first_mesh){
+    combined_mesh = mesh_o3d;
+    first_mesh = false;
+  }
+  combineMesh(mesh_o3d);
   open3d::io::WriteTriangleMesh(save_map_path + "_mesh.ply", mesh_o3d);
   LOG(INFO) << "save mesh in path: " << save_map_path + "_mesh.ply";
   TOC("SAVE MESH", _debug_print);
+
+  open3d::io::WriteTriangleMesh(save_map_path + "_combined_mesh.ply", combined_mesh);
 
   // if you don't want to use the open3d to save, use this one for simple but no
   // RGB! Eigen::MatrixXd V(vertices.size(), 3); for (size_t i = 0; i <
@@ -278,6 +288,12 @@ bool VDBFusionMapper::saveMap_callback(
   std::cout << "=================== SAVE PROCESS END ======================"
             << std::endl;
   return res.success;
+}
+
+void VDBFusionMapper::combineMesh(const open3d::geometry::TriangleMesh& mesh_o3d)
+{
+  combined_mesh += mesh_o3d;
+  std::cout << "Number of triangles in combined mesh: " << combined_mesh.triangle_normals_.size() << std::endl;
 }
 
 void VDBFusionMapper::setConfig() {
